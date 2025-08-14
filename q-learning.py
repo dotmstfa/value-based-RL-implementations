@@ -2,14 +2,15 @@
 Implementation of the model-free, off-policy, tabular algorithm, Q-learning, using gymnasium environments.
 """
 import gymnasium as gym
-from collections import defaultdict
+import numpy as np
 import random
 import math
 import matplotlib.pyplot as plt
 from itertools import count
 
 # Hyperparameters
-SEED = 42 
+SEED = 42
+PLOT = True # Plot the results
 EPSILON_MAX = 1
 EPSILON_MIN = 0.05
 EPSILON_DECAY = 5e-5
@@ -17,16 +18,17 @@ LR_MAX = 1
 LR_MIN = 0.1
 LR_DECAY = 1e-4
 GAMMA = 0.99
-NUM_EPISODES = 10000
+NUM_EPISODES = 20000
+EVAL_AGENT = True # Evaluate the agent on the learned policy
 EVAL_EPISODES = 10
-ENVIRONMENT = "Taxi-v3" # or "FrozenLake-v1" // "CliffWalking-v1"
-curr_episode = 0
+ENVIRONMENT = "FrozenLake-v1" # or "FrozenLake-v1" // "CliffWalking-v1"
 random.seed(42)
 
 class Agent:
     def __init__(self, env, eps_max, eps_min, eps_decay, lr_max, lr_min, lr_decay, gamma):
         self.env = env
-        self.action_space = self.env.action_space
+        self.action_space = env.action_space
+        self.observation_space = env.observation_space
         self.eps_max = eps_max
         self.eps_min = eps_min
         self.eps_decay = eps_decay
@@ -34,29 +36,28 @@ class Agent:
         self.lr_min = lr_min
         self.lr_decay = lr_decay
         self.gamma = gamma
-        # When a new state is encountered, intialize all actions in that state with 0 q-value.
-        self.q_table = defaultdict(lambda: {k:0 for k in range(self.action_space.n)})
+        self.q_table = np.zeros((self.observation_space.n, self.action_space.n))
     
-    def action(self, state, eval=False):
+    def select_action(self, state, episode=None, eval=False):
         #  Epsilon-Greedy
         sample = random.random()
-        eps = max(self.eps_min, self.eps_max * math.exp(-self.eps_decay * curr_episode)) if not eval else 0
+        eps = max(self.eps_min, self.eps_max * math.exp(-self.eps_decay * episode)) if not eval else 0
         if sample < eps:
             # Sample a random action with probability epsilon
             action = self.action_space.sample()
         else:
             # Choose the action corresponding with max Q-value with probability 1-epsilon.
-            action = max(self.q_table[state], key=self.q_table[state].get)
+            action = np.argmax(self.q_table[state])
         return action
 
-    def update(self, state, action, reward, next_state, terminated):
-        lr = max(self.lr_min, self.lr_max * math.exp(-self.lr_decay * curr_episode))
+    def update_values(self, state, action, reward, next_state, terminated, episode):
+        lr = max(self.lr_min, self.lr_max * math.exp(-self.lr_decay * episode))
         current_q_value = self.q_table[state][action]
         if terminated:
             # If the state is terminal, the TD target (future estimated value from being in this state and taking this action) is only the reward.
             td_target = reward
         else:
-            optimal_future_value = max(self.q_table[next_state].values())
+            optimal_future_value = np.max(self.q_table[next_state])
             td_target = reward + self.gamma*optimal_future_value
         self.q_table[state][action] += lr*(td_target-current_q_value)
 
@@ -74,7 +75,7 @@ def eval_agent(agent: Agent):
         state, _ = env.reset(seed=42)
         done = False
         while not done:
-            action = agent.action(state, eval=True)
+            action = agent.select_action(state, eval=True)
             next_state, reward, terminated, truncated, _ = env.step(action)
             state=next_state
             done = terminated or truncated
@@ -85,23 +86,23 @@ def training_loop():
     episodes = []
     steps_per_episode = []
     for episode in range(NUM_EPISODES):
-        global curr_episode
-        curr_episode = episode
         state, _  = env.reset(seed=SEED)
         for i in count():
-            action = agent.action(state)
+            action = agent.select_action(state, episode)
             next_state, reward, terminated, truncated, _ = env.step(action)
-            agent.update(state, action, reward, next_state, terminated)
+            agent.update_values(state, action, reward, next_state, terminated, episode)
             state = next_state
 
             if terminated or truncated:
                 episodes.append(episode)
                 steps_per_episode.append(i)
                 break
+    if PLOT:
+        plot(episodes, steps_per_episode)
 
-    plot(episodes, steps_per_episode)
     env.close()
-    eval_agent(agent)
+    if EVAL_AGENT:
+        eval_agent(agent)
 
 if __name__ == "__main__":
     training_loop()
