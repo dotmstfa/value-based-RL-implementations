@@ -1,0 +1,37 @@
+[project]
+name = "value-based-RL"
+version = "0.1"
+description = "Implementations of Value-Based RL methods."
+authors = [{ name = "dotmstfa", email = "dotmstfa@gmail.com" }]
+requires-python = ">=3.9"
+readme = "README.md"
+license = "MIT"
+keywords = [
+    "artificial intelligence",
+    "reinforcement learning",
+    "machine learning",
+    "research",
+]
+
+dependencies = [
+    "gymnasium>=1.2.0",
+    "torch>=2.4.0",
+    "pygame>=2.1",
+    "numpy>=2.2",
+    "tqdm>=4.67.1",
+    "matplotlib>=3.10.5",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest"
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "."
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
