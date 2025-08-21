@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import gymnasium as gym
 from value_based_methods.utils import tabular_epsilon_greedy
 
-class Q_Learning():
+class Q_Learning:
     """Off-policy Tabular TD Control.
 
     Arguments:

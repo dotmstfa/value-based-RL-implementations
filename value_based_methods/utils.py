@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def tabular_epsilon_greedy(q_table, state, epsilon, action_space):
     sample = np.random.random()
     if sample < epsilon:
@@ -9,8 +10,8 @@ def tabular_epsilon_greedy(q_table, state, epsilon, action_space):
         action = np.random.choice(np.flatnonzero(q_table[state] == np.max(q_table[state])))
     return action
 
-def tabular_eval(gym, q_table, environment, eval_episodes):
-    env = gym.make(environment, render_mode="human")
+
+def tabular_eval(env, q_table, eval_episodes):
     for _ in range(eval_episodes):
         state, _ = env.reset()
         while True:
@@ -20,6 +21,7 @@ def tabular_eval(gym, q_table, environment, eval_episodes):
             if terminated or truncated:
                 break
     env.close()
+
 
 def plot(epsidoes, durations, method):
     plt.plot(epsidoes, durations)
