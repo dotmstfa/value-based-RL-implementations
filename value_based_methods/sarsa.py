@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import gymnasium as gym
 from value_based_methods.utils import tabular_epsilon_greedy
 
-
 class SARSA:
     """On-policy Tabular TD Control.
 

@@ -1,5 +1,5 @@
 import pytest
-from value_based_methods.q_learning import Q_Learning
+from value_based_methods.q_learning import QLearning
 
 EPSILON_MAX = 1
 EPSILON_MIN = 0.05
@@ -12,7 +12,7 @@ NUM_EPISODES = 100000
 EVAL_EPISODES = 10
 ENVIRONMENT = "FrozenLake-v1"
 
-q_learning = Q_Learning(ENVIRONMENT, NUM_EPISODES, EVAL_EPISODES, GAMMA, EPSILON_MAX, EPSILON_MIN, EPSILON_DECAY, LR_MAX, LR_MIN, LR_DECAY, is_slippery=False)
+q_learning = QLearning(ENVIRONMENT, NUM_EPISODES, EVAL_EPISODES, GAMMA, EPSILON_MAX, EPSILON_MIN, EPSILON_DECAY, LR_MAX, LR_MIN, LR_DECAY, is_slippery=False)
 q_learning.train()
 q_learning.plot()
 q_learning.eval()
