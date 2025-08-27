@@ -151,10 +151,11 @@ class MonteCarlo:
                 done = terminated or truncated
                 if done:
                     break
+        env.close()
 
     def plot(self):
         plt.plot(self.episodes, self.durations)
         plt.xlabel("Episodes")
         plt.ylabel("Durations")
-        plt.title(f'Q-Learning ({self.env_id})')
+        plt.title(f'Monte-Carlo ({self.env_id})')
         plt.show()

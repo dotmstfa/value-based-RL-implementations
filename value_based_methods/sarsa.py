@@ -87,6 +87,8 @@ class SARSA:
                 done = terminated or truncated
                 if done:
                     break
+        env.close()
+
 
     def plot(self):
         plt.plot(self.episodes, self.durations)

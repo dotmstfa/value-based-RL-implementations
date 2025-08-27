@@ -1,7 +1,7 @@
 # Value-Based RL Methods Implementations
 
-Methods:
+Tabular Methods:
 - Q-learning
 - SARSA
-- Expected_SARSA
+- Expected-SARSA
 - Monte-Carlo

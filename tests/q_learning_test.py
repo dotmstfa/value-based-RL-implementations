@@ -9,9 +9,10 @@ LR_MIN = 0.1
 LR_DECAY = 5e-5
 GAMMA = 0.99
 NUM_EPISODES = 100000
-EVAL_EPISODES = 10
+EVAL_EPISODES = 3
 ENVIRONMENT = "FrozenLake-v1"
 
+# is_slippey arg for 'FrozenLake' environment
 q_learning = QLearning(ENVIRONMENT, NUM_EPISODES, EVAL_EPISODES, GAMMA, EPSILON_MAX, EPSILON_MIN, EPSILON_DECAY, LR_MAX, LR_MIN, LR_DECAY, is_slippery=False)
 q_learning.train()
 q_learning.plot()
