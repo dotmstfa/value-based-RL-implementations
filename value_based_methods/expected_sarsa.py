@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 import gymnasium as gym
 from value_based_methods.utils import tabular_epsilon_greedy
 
-class Expected_SARSA:
-    """On-policy Tabular TD Control.
+class ExpectedSARSA:
+    """On-policy Expected Tabular TD Control - Expected SARSA.
+
+    **Note: Expected-SARSA can be used in an off-policy manner, but when the target policy is greedy, it is equal to Q-learning.
 
     Arguments:
     env_id: Name of environment in gymnasium. *Must have discrete action and observation spaces
@@ -56,13 +58,11 @@ class Expected_SARSA:
             epsilon = max(self.epsilon_min, self.epsilon_max*np.exp(-self.epsilon_decay*episode)) # decay epsilon
             lr = max(self.lr_min, self.lr_max*np.exp(-self.lr_decay*episode)) # decay learning rate
             state, _ = self.env.reset()
-            action = tabular_epsilon_greedy(self.q_table, state, epsilon, self.action_space.n)
             for i in count():
+                action = tabular_epsilon_greedy(self.q_table, state, epsilon, self.action_space.n)
                 next_state, reward, terminated, truncated, _ = self.env.step(action)
-                next_action = tabular_epsilon_greedy(self.q_table, next_state, epsilon, self.action_space.n)
-                self.update_value(state, action, reward, next_state, next_action, terminated, lr) # update q_table value for [state, action]
+                self.update_value(state, action, reward, next_state, terminated, lr, epsilon) # update q_table value for [state, action]
                 state = next_state
-                action = next_action
                 done = terminated or truncated
                 if done:
                     self.episodes.append(episode)
@@ -70,10 +70,13 @@ class Expected_SARSA:
                     break
         self.env.close()
 
-    def update_value(self, state, action, reward, next_state, next_action, terminated, lr):
-        next_value = self.q_table[next_state][next_action] # maximum action value in next_state
+    def update_value(self, state, action, reward, next_state, terminated, lr, epsilon):
+        # On-policy update for Expected-SARSA
+        max_next_value = np.max(self.q_table[next_state])
+        expected_value = sum([(epsilon/self.action_space.n)*q for q in self.q_table[next_state]]) + max_next_value*(1-epsilon) # expected action value for next state
+        print("Expected_value", expected_value)
         current_value = self.q_table[state][action]
-        target = reward + (not terminated)*self.gamma*next_value
+        target = reward + (not terminated)*self.gamma*expected_value
         self.q_table[state][action] = current_value + lr*(target-current_value)
 
     def eval(self):
@@ -87,10 +90,11 @@ class Expected_SARSA:
                 done = terminated or truncated
                 if done:
                     break
+        env.close()
 
     def plot(self):
         plt.plot(self.episodes, self.durations)
         plt.xlabel("Episodes")
         plt.ylabel("Durations")
-        plt.title(f'SARSA ({self.env_id})')
+        plt.title(f'Expected-SARSA ({self.env_id})')
         plt.show()
